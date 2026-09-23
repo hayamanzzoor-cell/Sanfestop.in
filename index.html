@@ -114,33 +114,25 @@
         <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-4xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-800 space-y-6">
             <h2 class="text-xl font-black text-slate-900 dark:text-white">Create Your Citizen Profile</h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">One-time offline setup required for municipal issue routing.</p>
-            <div class="space-y-4">
+            <form onsubmit="handleProfileCreation(event)" class="space-y-4">
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Public Display Name</label>
-                    <input type="text" id="profileDisplayName" value="Haya Manzoor" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white outline-none font-medium">
+                    <input type="text" id="profileDisplayName" required class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white outline-none font-medium">
                 </div>
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Ward / Region</label>
-                    <input type="text" id="profileWard" value="Ward 4 - Central Zone" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white outline-none font-medium">
+                    <input type="text" id="profileWard" required value="Ward 4 - Central Zone" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white outline-none font-medium">
                 </div>
-                <button type="button" onclick="completeProfileAndEnterMap()" class="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white font-black text-xs uppercase rounded-2xl transition-all shadow-lg cursor-pointer">
+                <button type="submit" class="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white font-black text-xs uppercase rounded-2xl transition-all shadow-lg">
                     Complete Setup & Enter Map
                 </button>
-            </div>
+            </form>
         </div>
     </div>
 
     <!-- MAIN APP DASHBOARD -->
     <div id="appView" class="hidden h-screen flex flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 relative">
         
-        <!-- TOP-RIGHT SOS EMERGENCY BUTTON -->
-        <div class="absolute top-3 right-3 sm:top-4 sm:right-4 z-40 flex items-center space-x-2 pointer-events-auto">
-            <button type="button" onclick="openSosModal()" class="flex items-center space-x-1.5 bg-rose-600 hover:bg-rose-500 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl shadow-xl font-black text-[11px] sm:text-xs uppercase tracking-wider transition-all animate-pulse border border-rose-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-                <span>SOS Emergency</span>
-            </button>
-        </div>
-
         <!-- MAP CANVAS -->
         <div class="absolute inset-0 z-0">
             <div id="map" class="map-canvas"></div>
@@ -178,7 +170,7 @@
 
             <div class="grid grid-cols-2 gap-2">
                 <button type="button" onclick="panToUserLocation()" class="py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-md">GPS Near Me</button>
-                <button type="button" onclick="handleLogout()" class="py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl">Logout</button>
+                <button type="button" onclick="goBackToWelcome()" class="py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl">Logout / Back</button>
             </div>
 
             <hr class="border-slate-200 dark:border-slate-800">
@@ -191,10 +183,19 @@
             </div>
         </div>
 
-        <!-- BOTTOM-RIGHT MAP STYLE SELECTOR -->
-        <div class="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-30 flex items-center space-x-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 pointer-events-auto">
-            <button type="button" onclick="setMapStyle('satellite')" id="styleSatBtn" class="px-3.5 py-1.5 rounded-xl text-[11px] font-black bg-teal-600 text-white shadow-sm transition-all">Satellite</button>
-            <button type="button" onclick="setMapStyle('terrain')" id="styleTerBtn" class="px-3.5 py-1.5 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">Terrain</button>
+        <!-- BOTTOM-LEFT CONTROLS: SOS BUTTON & MAP STYLE SELECTOR -->
+        <div class="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-30 flex flex-col space-y-2 pointer-events-auto">
+            <!-- SOS EMERGENCY BUTTON -->
+            <button type="button" onclick="openSosModal()" class="flex items-center justify-center space-x-1.5 bg-rose-600 hover:bg-rose-500 text-white px-4 py-2.5 rounded-2xl shadow-xl font-black text-xs uppercase tracking-wider transition-all animate-pulse border border-rose-400 w-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                <span>SOS Emergency</span>
+            </button>
+
+            <!-- MAP STYLE SELECTOR -->
+            <div class="flex items-center space-x-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800">
+                <button type="button" onclick="setMapStyle('satellite')" id="styleSatBtn" class="flex-1 px-3.5 py-1.5 rounded-xl text-[11px] font-black bg-teal-600 text-white shadow-sm transition-all text-center">Satellite</button>
+                <button type="button" onclick="setMapStyle('terrain')" id="styleTerBtn" class="flex-1 px-3.5 py-1.5 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-center">Terrain</button>
+            </div>
         </div>
 
     </div>
@@ -375,26 +376,25 @@
             }
         }
 
+        let tempEmail = '';
         function handleAuth(e) {
             e.preventDefault();
             const email = document.getElementById('authEmail').value;
+            const pass = document.getElementById('authPassword').value;
             const nameInput = document.getElementById('signupName').value;
 
-            currentUser = { 
-                name: nameInput || email.split('@')[0] || "Citizen User", 
-                email: email, 
-                ward: "Ward 4 - Central Zone" 
-            };
-            
-            localStorage.setItem('saneStopUser', JSON.stringify(currentUser));
+            localStorage.setItem('saneStopEmail', email);
+            localStorage.setItem('saneStopPass', pass);
+            tempEmail = email;
 
-            document.getElementById('authView').classList.add('hidden');
-            
             if (isSignupMode) {
-                // Show profile creation screen
+                document.getElementById('authView').classList.add('hidden');
                 document.getElementById('profileCreationView').classList.remove('hidden');
+                document.getElementById('profileDisplayName').value = nameInput || "Citizen User";
             } else {
-                // Skip directly to app map view for fast login
+                currentUser = { name: nameInput || email.split('@')[0], email: email, ward: "Ward 4 - Central Zone" };
+                localStorage.setItem('saneStopUser', JSON.stringify(currentUser));
+                document.getElementById('authView').classList.add('hidden');
                 document.getElementById('profileCreationView').classList.add('hidden');
                 document.getElementById('appView').classList.remove('hidden');
                 updateProfileDisplay();
@@ -402,12 +402,12 @@
             }
         }
 
-        function completeProfileAndEnterMap() {
+        function handleProfileCreation(e) {
+            e.preventDefault();
             const name = document.getElementById('profileDisplayName').value;
             const ward = document.getElementById('profileWard').value;
 
-            currentUser.name = name || currentUser.name;
-            currentUser.ward = ward || "Ward 4 - Central Zone";
+            currentUser = { name: name, email: tempEmail, ward: ward };
             localStorage.setItem('saneStopUser', JSON.stringify(currentUser));
 
             document.getElementById('profileCreationView').classList.add('hidden');
@@ -550,6 +550,7 @@
             closeSubProfileModal();
         }
 
+        // Dynamically generate minimum 8 services around any worldwide coordinate searched
         function generateLocalServicesForCoords(lat, lng, placeName) {
             const serviceTypes = ['toilet', 'water', 'toilet', 'water', 'toilet', 'water', 'toilet', 'water'];
             const names = [
@@ -568,7 +569,7 @@
             for (let i = 0; i < 8; i++) {
                 const sType = serviceTypes[i];
                 const angle = (i / 8) * 2 * Math.PI;
-                const radius = 0.008 + (i * 0.003);
+                const radius = 0.008 + (i * 0.003); // Spread across ~1 to 4 km
                 const fLat = lat + (radius * Math.cos(angle));
                 const fLng = lng + (radius * Math.sin(angle));
                 
@@ -596,6 +597,7 @@
             return generated;
         }
 
+        // Initialize with default dataset around Kochi / Edachira
         dynamicFacilities = generateLocalServicesForCoords(10.0075, 76.3682, "Edachira");
 
         function submitMissingPlace(e) {
@@ -659,15 +661,15 @@
             const terBtn = document.getElementById('styleTerBtn');
 
             [satBtn, terBtn].forEach(b => {
-                b.className = "px-3.5 py-1.5 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all";
+                b.className = "flex-1 px-3.5 py-1.5 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-center";
             });
 
             if (style === 'satellite') {
                 activeTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' }).addTo(map);
-                satBtn.className = "px-3.5 py-1.5 rounded-xl text-[11px] font-black bg-teal-600 text-white shadow-sm transition-all";
+                satBtn.className = "flex-1 px-3.5 py-1.5 rounded-xl text-[11px] font-black bg-teal-600 text-white shadow-sm transition-all text-center";
             } else if (style === 'terrain') {
                 activeTileLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '&copy; OpenTopoMap' }).addTo(map);
-                terBtn.className = "px-3.5 py-1.5 rounded-xl text-[11px] font-black bg-teal-600 text-white shadow-sm transition-all";
+                terBtn.className = "flex-1 px-3.5 py-1.5 rounded-xl text-[11px] font-black bg-teal-600 text-white shadow-sm transition-all text-center";
             }
             map.invalidateSize();
         }
@@ -870,7 +872,6 @@
                     body.innerHTML = `Dear ${currentUser ? currentUser.name : 'Citizen'},<br>Thank you for your positive review regarding <b>${facilityName}</b>! Your contribution helps keep our public amenities clean and reliable across the municipality.`;
                 }
 
-                popup.classList.add('flex');
                 popup.classList.remove('hidden');
                 setTimeout(() => {
                     popup.classList.remove('translate-y-10', 'opacity-0');
@@ -931,6 +932,7 @@
             `).join('');
         }
 
+        // GLOBAL NOMINATIM SEARCH WITH AUTOMATIC 8+ SERVICES GENERATION
         function handleGlobalSearchInput(query) {
             const q = query.trim();
             const suggestionsBox = document.getElementById('searchSuggestions');
