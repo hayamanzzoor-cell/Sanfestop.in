@@ -109,27 +109,6 @@
         </div>
     </div>
 
-    <!-- PROFILE CREATION VIEW -->
-    <div id="profileCreationView" class="hidden min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-slate-950 z-50 relative">
-        <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-4xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-800 space-y-6">
-            <h2 class="text-xl font-black text-slate-900 dark:text-white">Create Your Citizen Profile</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">One-time offline setup required for municipal issue routing.</p>
-            <form onsubmit="handleProfileCreation(event)" class="space-y-4">
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Public Display Name</label>
-                    <input type="text" id="profileDisplayName" required class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white outline-none font-medium">
-                </div>
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Ward / Region</label>
-                    <input type="text" id="profileWard" required value="Ward 4 - Central Zone" class="w-full px-4 py-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white outline-none font-medium">
-                </div>
-                <button type="submit" class="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white font-black text-xs uppercase rounded-2xl transition-all shadow-lg">
-                    Complete Setup & Enter Map
-                </button>
-            </form>
-        </div>
-    </div>
-
     <!-- MAIN APP DASHBOARD -->
     <div id="appView" class="hidden h-screen flex flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 relative">
         
@@ -178,7 +157,7 @@
 
             <div class="grid grid-cols-2 gap-2">
                 <button type="button" onclick="panToUserLocation()" class="py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-md">GPS Near Me</button>
-                <button type="button" onclick="goBackToWelcome()" class="py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl">Logout / Back</button>
+                <button type="button" onclick="handleLogout()" class="py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl">Logout</button>
             </div>
 
             <hr class="border-slate-200 dark:border-slate-800">
@@ -342,6 +321,7 @@
         let searchTimeout = null;
         let dynamicFacilities = [];
 
+        // Simplified login check to ensure it opens immediately when logged in
         window.onload = function() {
             const savedUser = localStorage.getItem('saneStopUser');
             if (savedUser) {
@@ -379,38 +359,20 @@
         function handleAuth(e) {
             e.preventDefault();
             const email = document.getElementById('authEmail').value;
-            const pass = document.getElementById('authPassword').value;
             const nameInput = document.getElementById('signupName').value;
 
-            localStorage.setItem('saneStopEmail', email);
-            localStorage.setItem('saneStopPass', pass);
-            tempEmail = email;
-
-            if (isSignupMode) {
-                document.getElementById('authView').classList.add('hidden');
-                document.getElementById('profileCreationView').classList.remove('hidden');
-                document.getElementById('profileDisplayName').value = nameInput || "Citizen User";
-            } else {
-                currentUser = { name: nameInput || email.split('@')[0], email: email, ward: "Ward 4 - Central Zone" };
-                localStorage.setItem('saneStopUser', JSON.stringify(currentUser));
-                document.getElementById('authView').classList.add('hidden');
-                document.getElementById('profileCreationView').classList.add('hidden');
-                document.getElementById('appView').classList.remove('hidden');
-                updateProfileDisplay();
-                setTimeout(() => initMap(), 200);
-            }
-        }
-
-        function handleProfileCreation(e) {
-            e.preventDefault();
-            const name = document.getElementById('profileDisplayName').value;
-            const ward = document.getElementById('profileWard').value;
-
-            currentUser = { name: name, email: tempEmail, ward: ward };
+            currentUser = { 
+                name: nameInput || email.split('@')[0] || "Citizen User", 
+                email: email, 
+                ward: "Ward 4 - Central Zone" 
+            };
+            
             localStorage.setItem('saneStopUser', JSON.stringify(currentUser));
 
+            document.getElementById('authView').classList.add('hidden');
             document.getElementById('profileCreationView').classList.add('hidden');
             document.getElementById('appView').classList.remove('hidden');
+            
             updateProfileDisplay();
             setTimeout(() => initMap(), 200);
         }
@@ -549,7 +511,6 @@
             closeSubProfileModal();
         }
 
-        // Dynamically generate minimum 8 services around any worldwide coordinate searched
         function generateLocalServicesForCoords(lat, lng, placeName) {
             const serviceTypes = ['toilet', 'water', 'toilet', 'water', 'toilet', 'water', 'toilet', 'water'];
             const names = [
@@ -568,7 +529,7 @@
             for (let i = 0; i < 8; i++) {
                 const sType = serviceTypes[i];
                 const angle = (i / 8) * 2 * Math.PI;
-                const radius = 0.008 + (i * 0.003); // Spread across ~1 to 4 km
+                const radius = 0.008 + (i * 0.003);
                 const fLat = lat + (radius * Math.cos(angle));
                 const fLng = lng + (radius * Math.sin(angle));
                 
@@ -596,7 +557,6 @@
             return generated;
         }
 
-        // Initialize with default dataset around Kochi / Edachira
         dynamicFacilities = generateLocalServicesForCoords(10.0075, 76.3682, "Edachira");
 
         function submitMissingPlace(e) {
@@ -931,7 +891,6 @@
             `).join('');
         }
 
-        // GLOBAL NOMINATIM SEARCH WITH AUTOMATIC 8+ SERVICES GENERATION
         function handleGlobalSearchInput(query) {
             const q = query.trim();
             const suggestionsBox = document.getElementById('searchSuggestions');
@@ -975,7 +934,6 @@
             const shortName = displayName.split(',')[0];
             const newLocalServices = generateLocalServicesForCoords(numLat, numLon, shortName);
             
-            // Prepend new 8 services so they render immediately around the searched worldwide location
             dynamicFacilities = newLocalServices.concat(dynamicFacilities);
             
             if (map) {
